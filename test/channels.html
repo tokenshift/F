@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Testing F.channels</title>
+
+		<script type="text/javascript" src="../js/F.channels.js"></script>
+	</head>
+	<body>
+		<input type="text" id="test_input" value="1" />
+		<button id="test_button">Click</button>
+		<br />Test 1: <span id="test_span1"></span>
+		<br />Test 2: <span id="test_span2"></span>
+
+		<script type="text/javascript">
+			var channel = F.channel();
+
+			document.getElementById('test_button').onclick = function () {
+				var text = document.getElementById('test_input').value;
+				if (Number(text)) {
+					document.getElementById('test_input').value = Number(text) + 1;
+				}
+				channel.send(text);
+			};
+
+			channel.subscribe(function (text) {
+				document.getElementById('test_span1').innerHTML = text;
+			});
+
+			channel.subscribe(function (text) {
+				document.getElementById('test_span2').innerHTML = text;
+			});
+		</script>
+	</body>
+</html>
