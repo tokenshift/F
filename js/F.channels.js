@@ -8,7 +8,8 @@ window.F = window.F || {};
 	function Channel() {
 		this._message = null;
 		this._open = true;
-		this._waiting = null;
+		this._waitingHead = null;
+		this._waitingTail = null;
 	}
 
 	// Closes the channel.
@@ -22,14 +23,13 @@ window.F = window.F || {};
 	Channel.prototype.send = function (msg) {
 		if (!this._open) { return; }
 
-		if (this._waiting == null) {
+		var waiting = dequeue(this);
+		if (waiting == null) {
 			// Only the most recent message is kept if no consumer was ready to
 			// receive it.
 			this._message = msg;
 		}
 		else {
-			var waiting = this._waiting;
-			this._waiting = null;
 			setTimeout(function () {
 				waiting(msg)
 			}, 0);
@@ -47,32 +47,34 @@ window.F = window.F || {};
 				fun(msg);
 			}, 0);
 		}
-		else if (this._waiting == null) {
-			this._waiting = fun;
-		}
 		else {
-			var waiting = this._waiting;
-			var ch = this;
-			this._waiting = function (msg) {
-				// Let the already registered consumer get the next message,
-				// but register this consumer for the one after.
-				ch.recv(fun);
-				waiting(msg);
-			};
+			enqueue(this, fun);
 		}
 	};
 
-	// Receives messages from the channel until it is closed.
-	Channel.prototype.subscribe = function (fun) {
-		if (!this._open) { return; }
+	// Enqueues a waiting consumer.
+	var enqueue = function (channel, waiting) {
+		if (channel._waitingTail == null) {
+			channel._waitingHead = waiting;
+			channel._waitingTail = waiting;
+		}
+		else {
+			channel._waitingTail._waitingNext = waiting;
+			channel._waitingTail = waiting;
+		}
+		waiting._waitingNext = null;
+	}
 
-		var ch = this;
-		var recur = function (msg) {
-			fun(msg);
-			ch.recv(recur);
-		};
-
-		this.recv(recur);
+	// Dequeues the first waiting consumer.
+	var dequeue = function (channel) {
+		if (channel._waitingHead != null) {
+			var head = channel._waitingHead;
+			channel._waitingHead = head._waitingNext;
+			return head;
+		}
+		else {
+			return null;
+		}
 	};
 
 	// Creates a new channel.

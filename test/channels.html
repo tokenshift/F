@@ -10,6 +10,9 @@
 		<button id="test_button">Click</button>
 		<br />Test 1: <span id="test_span1"></span>
 		<br />Test 2: <span id="test_span2"></span>
+		<br />Test 3: <span id="test_span3"></span>
+		<br />Test 4: <span id="test_span4"></span>
+		<br />Test 5: <span id="test_span5"></span>
 
 		<script type="text/javascript">
 			var channel = F.channel();
@@ -22,13 +25,40 @@
 				channel.send(text);
 			};
 
-			channel.subscribe(function (text) {
-				document.getElementById('test_span1').innerHTML = text;
-			});
+			var setContent = function (id, content) {
+				document.getElementById(id).innerHTML = content;
+			};
 
-			channel.subscribe(function (text) {
-				document.getElementById('test_span2').innerHTML = text;
-			});
+			var setSpan1 = function (text) {
+				setContent('test_span1', text);
+				channel.recv(setSpan1);
+			}
+
+			var setSpan2 = function (text) {
+				setContent('test_span2', text);
+				channel.recv(setSpan2);
+			}
+
+			var setSpan3 = function (text) {
+				setContent('test_span3', text);
+				channel.recv(setSpan3);
+			}
+
+			var setSpan4 = function (text) {
+				setContent('test_span4', text);
+				channel.recv(setSpan4);
+			}
+
+			var setSpan5 = function (text) {
+				setContent('test_span5', text);
+				channel.recv(setSpan5);
+			}
+
+			channel.recv(setSpan1);
+			channel.recv(setSpan2);
+			channel.recv(setSpan3);
+			channel.recv(setSpan4);
+			channel.recv(setSpan5);
 		</script>
 	</body>
 </html>
