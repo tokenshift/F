@@ -6,59 +6,101 @@
 		<script type="text/javascript" src="../js/F.channels.js"></script>
 	</head>
 	<body>
-		<input type="text" id="test_input" value="1" />
-		<button id="test_button">Click</button>
-		<br />Test 1: <span id="test_span1"></span>
-		<br />Test 2: <span id="test_span2"></span>
-		<br />Test 3: <span id="test_span3"></span>
-		<br />Test 4: <span id="test_span4"></span>
-		<br />Test 5: <span id="test_span5"></span>
+		<h1>Channel</h1>
+
+		<h2>Recv</h2>
+		<input type="text" id="recv_input" value="1" />
+		<button id="recv_button">Click</button>
+		<br />Test 1: <span id="recv_span1"></span>
+		<br />Test 2: <span id="recv_span2"></span>
+		<br />Test 3: <span id="recv_span3"></span>
 
 		<script type="text/javascript">
-			var channel = F.channel();
+			var recvChannel = F.channel();
 
-			document.getElementById('test_button').onclick = function () {
-				var text = document.getElementById('test_input').value;
+			document.getElementById('recv_button').onclick = function () {
+				var text = document.getElementById('recv_input').value;
 				if (Number(text)) {
-					document.getElementById('test_input').value = Number(text) + 1;
+					document.getElementById('recv_input').value = Number(text) + 1;
 				}
-				channel.send(text);
+				recvChannel.send(text);
 			};
 
-			var setContent = function (id, content) {
-				document.getElementById(id).innerHTML = content;
+			var setContent = function (id) {
+				return function (content) {
+					document.getElementById(id).innerHTML = content;
+				};
 			};
 
-			var setSpan1 = function (text) {
-				setContent('test_span1', text);
-				channel.recv(setSpan1);
-			}
+			recvChannel.recv(setContent('recv_span1'));
+			recvChannel.recv(setContent('recv_span2'));
+			recvChannel.recv(setContent('recv_span3'));
+		</script>
 
-			var setSpan2 = function (text) {
-				setContent('test_span2', text);
-				channel.recv(setSpan2);
-			}
+		<h2>Recv Loop</h2>
+		<input type="text" id="recv_loop_input" value="1" />
+		<button id="recv_loop_button">Click</button>
+		<br />Test 1: <span id="recv_loop_span1"></span>
+		<br />Test 2: <span id="recv_loop_span2"></span>
+		<br />Test 3: <span id="recv_loop_span3"></span>
+		<br />Test 4: <span id="recv_loop_span4"></span>
+		<br />Test 5: <span id="recv_loop_span5"></span>
 
-			var setSpan3 = function (text) {
-				setContent('test_span3', text);
-				channel.recv(setSpan3);
-			}
+		<script type="text/javascript">
+			var recvLoopChannel = F.channel();
 
-			var setSpan4 = function (text) {
-				setContent('test_span4', text);
-				channel.recv(setSpan4);
-			}
+			document.getElementById('recv_loop_button').onclick = function () {
+				var text = document.getElementById('recv_loop_input').value;
+				if (Number(text)) {
+					document.getElementById('recv_loop_input').value = Number(text) + 1;
+				}
+				recvLoopChannel.send(text);
+			};
 
-			var setSpan5 = function (text) {
-				setContent('test_span5', text);
-				channel.recv(setSpan5);
-			}
+			var setContentLoop = function (id) {
+				var recur = function (text) {
+					setContent(id)(text);
+					recvLoopChannel.recv(recur);
+				};
+				return recur;
+			};
 
-			channel.recv(setSpan1);
-			channel.recv(setSpan2);
-			channel.recv(setSpan3);
-			channel.recv(setSpan4);
-			channel.recv(setSpan5);
+			recvLoopChannel.recv(setContentLoop('recv_loop_span1'));
+			recvLoopChannel.recv(setContentLoop('recv_loop_span2'));
+			recvLoopChannel.recv(setContentLoop('recv_loop_span3'));
+			recvLoopChannel.recv(setContentLoop('recv_loop_span4'));
+			recvLoopChannel.recv(setContentLoop('recv_loop_span5'));
+		</script>
+
+		<h2>Subscribe</h2>
+		<input type="text" id="subscribe_input" value="1" />
+		<button id="subscribe_button">Click</button>
+		<br />Test 1: <span id="subscribe_span1"></span>
+		<br />Test 2: <span id="subscribe_span2"></span>
+		<br />Test 3: <span id="subscribe_span3"></span>
+		<br />Test 4: <span id="subscribe_span4"></span>
+		<br />Test 5: <span id="subscribe_span5"></span>
+		<br />Test 6: <span id="subscribe_span6"></span>
+		<br />Test 7: <span id="subscribe_span7"></span>
+
+		<script type="text/javascript">
+			var subChannel = F.channel();
+
+			document.getElementById('subscribe_button').onclick = function () {
+				var text = document.getElementById('subscribe_input').value;
+				if (Number(text)) {
+					document.getElementById('subscribe_input').value = Number(text) + 1;
+				}
+				subChannel.send(text);
+			};
+
+			subChannel.subscribe(setContent('subscribe_span1'));
+			subChannel.subscribe(setContent('subscribe_span2'));
+			subChannel.subscribe(setContent('subscribe_span3'));
+			subChannel.subscribe(setContent('subscribe_span4'));
+			subChannel.subscribe(setContent('subscribe_span5'));
+			subChannel.subscribe(setContent('subscribe_span6'));
+			subChannel.subscribe(setContent('subscribe_span7'));
 		</script>
 	</body>
 </html>

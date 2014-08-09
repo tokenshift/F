@@ -36,7 +36,7 @@ window.F = window.F || {};
 		}
 	};
 
-	// Receives a message from a channel.
+	// Receives a message from the channel.
 	Channel.prototype.recv = function (fun) {
 		if (!this._open) { return; }
 
@@ -50,6 +50,16 @@ window.F = window.F || {};
 		else {
 			enqueue(this, fun);
 		}
+	};
+
+	// Receives messages from the channel until it is closed.
+	Channel.prototype.subscribe = function (fun) {
+		var channel = this;
+		var recur = function (msg) {
+			fun(msg);
+			channel.recv(recur);
+		};
+		channel.recv(recur);
 	};
 
 	// Enqueues a waiting consumer.
