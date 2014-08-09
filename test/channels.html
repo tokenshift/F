@@ -8,6 +8,29 @@
 	<body>
 		<h1>Channel</h1>
 
+		<h2>Mouse Position</h2>
+		<br /><label>X:</label> <span id="mouse_x"></span>
+		<br /><label>Y:</label> <span id="mouse_y"></span>
+
+		<script type="text/javascript">
+			var mouseChannel = F.channel();
+
+			document.onmousemove = function (e) {
+				mouseChannel.send(e);
+			};
+
+			var setContent = function (id) {
+				return function (content) {
+					document.getElementById(id).innerHTML = content;
+				};
+			};
+
+			mouseChannel.subscribe(function (e) {
+				setContent('mouse_x')(e.x.toString());
+				setContent('mouse_y')(e.y.toString());
+			});
+		</script>
+
 		<h2>Recv</h2>
 		<input type="text" id="recv_input" value="1" />
 		<button id="recv_button">Click</button>
@@ -24,12 +47,6 @@
 					document.getElementById('recv_input').value = Number(text) + 1;
 				}
 				recvChannel.send(text);
-			};
-
-			var setContent = function (id) {
-				return function (content) {
-					document.getElementById(id).innerHTML = content;
-				};
 			};
 
 			recvChannel.recv(setContent('recv_span1'));

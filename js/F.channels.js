@@ -62,6 +62,16 @@ window.F = window.F || {};
 		channel.recv(recur);
 	};
 
+	// Returns a channel that will pass through all messages matching the
+	// specified predicate.
+	Channel.prototype.where = function (pred) {
+	};
+
+	// Returns a throttled channel that will pass through a message at most
+	// once every X milliseconds.
+	Channel.prototype.throttle = function (interval) {
+	};
+
 	// Enqueues a waiting consumer.
 	var enqueue = function (channel, waiting) {
 		if (channel._waitingTail == null) {
