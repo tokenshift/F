@@ -52,6 +52,28 @@ window.F = window.F || {};
 		}
 	};
 
+	// Returns a channel that applies the provided mapping to each message that
+	// it receives.
+	Channel.prototype.map = function (fun) {
+		// TODO
+	};
+
+	// Returns a throttled channel that will pass through a message at most
+	// once every X milliseconds.
+	Channel.prototype.throttle = function (interval) {
+		var throttled = new Channel();
+		var lastTick = null;
+
+		this.subscribe(function (msg) {
+			if (lastTick == null || lastTick + interval < Date.now()) {
+				lastTick = Date.now();
+				throttled.send(msg);
+			}
+		});
+
+		return throttled;
+	};
+
 	// Receives messages from the channel until it is closed.
 	Channel.prototype.subscribe = function (fun) {
 		var channel = this;
@@ -74,22 +96,6 @@ window.F = window.F || {};
 		});
 
 		return filtered;
-	};
-
-	// Returns a throttled channel that will pass through a message at most
-	// once every X milliseconds.
-	Channel.prototype.throttle = function (interval) {
-		var throttled = new Channel();
-		var lastTick = null;
-
-		this.subscribe(function (msg) {
-			if (lastTick == null || lastTick + interval < Date.now()) {
-				lastTick = Date.now();
-				throttled.send(msg);
-			}
-		});
-
-		return throttled;
 	};
 
 	// Enqueues a waiting consumer.
