@@ -133,22 +133,26 @@
 			var whereChannel = F.channel();
 
 			document.getElementById('yes_button').onclick = function (e) {
-				whereChannel.send('Yes');
+				whereChannel.send(e);
 			};
 
 			document.getElementById('no_button').onclick = function (e) {
-				whereChannel.send('No');
+				whereChannel.send(e);
 			};
 
-			whereChannel.where(function (e) {
-				return e == 'Yes';
+			var whereChannel2 = whereChannel.map(function (e) {
+				return e.target.id == 'yes_button';
+			});
+
+			whereChannel2.where(function (e) {
+				return e === true;
 			}).subscribe(function (e) {
 				var li = document.createElement('LI');
 				li.innerHTML = e;
 				document.getElementById('yes_list').appendChild(li);
 			});
 
-			whereChannel.subscribe(function (e) {
+			whereChannel2.subscribe(function (e) {
 				var li = document.createElement('LI');
 				li.innerHTML = e;
 				document.getElementById('no_list').appendChild(li);
