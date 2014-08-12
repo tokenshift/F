@@ -59,7 +59,7 @@ window.F = window.F || {};
 			fun(msg);
 			channel.recv(recur);
 		};
-		channel.recv(recur);
+		this.recv(recur);
 	};
 
 	// Returns a channel that will pass through all messages matching the
@@ -70,6 +70,17 @@ window.F = window.F || {};
 	// Returns a throttled channel that will pass through a message at most
 	// once every X milliseconds.
 	Channel.prototype.throttle = function (interval) {
+		var throttled = new Channel();
+		var lastTick = null;
+
+		this.subscribe(function (msg) {
+			if (lastTick == null || lastTick + interval < Date.now()) {
+				lastTick = Date.now();
+				throttled.send(msg);
+			}
+		});
+
+		return throttled;
 	};
 
 	// Enqueues a waiting consumer.
@@ -89,7 +100,12 @@ window.F = window.F || {};
 	var dequeue = function (channel) {
 		if (channel._waitingHead != null) {
 			var head = channel._waitingHead;
+			
 			channel._waitingHead = head._waitingNext;
+			if (channel._waitingHead == null) {
+				channel._waitingTail = null;
+			}
+
 			return head;
 		}
 		else {
