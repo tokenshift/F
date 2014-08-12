@@ -119,5 +119,40 @@
 				setContent('mouse_y')(e.y.toString());
 			});
 		</script>
+
+		<h2>Topic</h2>
+
+		<h2>Where</h2>
+		<button id="yes_button">Yes</button>
+		<button id="no_button">No</button>
+
+		<ul id="yes_list"></ul>
+		<ul id="no_list"></ul>
+
+		<script type="text/javascript">
+			var whereChannel = F.channel();
+
+			document.getElementById('yes_button').onclick = function (e) {
+				whereChannel.send('Yes');
+			};
+
+			document.getElementById('no_button').onclick = function (e) {
+				whereChannel.send('No');
+			};
+
+			whereChannel.where(function (e) {
+				return e == 'Yes';
+			}).subscribe(function (e) {
+				var li = document.createElement('LI');
+				li.innerHTML = e;
+				document.getElementById('yes_list').appendChild(li);
+			});
+
+			whereChannel.subscribe(function (e) {
+				var li = document.createElement('LI');
+				li.innerHTML = e;
+				document.getElementById('no_list').appendChild(li);
+			});
+		</script>
 	</body>
 </html>

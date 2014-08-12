@@ -65,6 +65,15 @@ window.F = window.F || {};
 	// Returns a channel that will pass through all messages matching the
 	// specified predicate.
 	Channel.prototype.where = function (pred) {
+		var filtered = new Channel();
+
+		this.subscribe(function (msg) {
+			if (pred(msg)) {
+				filtered.send(msg);
+			}
+		});
+
+		return filtered;
 	};
 
 	// Returns a throttled channel that will pass through a message at most
