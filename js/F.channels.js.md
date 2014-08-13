@@ -2,7 +2,7 @@
 
 _Asynchronous programming without callback hell._
 
-	(function (root) {
+	;(function () {
 
 ## Basics
 
@@ -171,7 +171,7 @@ subsequent receiver.
 
 Only channel construction is exported.
 
-		root.channel = function () {
+		this.channel = function () {
 			return new Channel();
 		};
 	
