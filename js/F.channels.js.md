@@ -174,7 +174,7 @@ Only channel construction is exported.
 		root.channel = function () {
 			return new Channel();
 		};
-		
-Create or attach F.channels to the global F object.
+	
+**F.channels** is attached to the global F object.
 
 	}.call(window.F = window.F || {}))
