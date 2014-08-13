@@ -15,8 +15,7 @@ begins.
 		function Channel() {
 			this._message = null;
 			this._open = true;
-			this._waitingHead = null;
-			this._waitingTail = null;
+			this._waiting = new Queue();
 		}
 
 Messages are routed through channels using the `send` and `recv` methods on
@@ -31,7 +30,7 @@ faster than the receiver's ability to process them.
 		Channel.prototype.send = function (msg) {
 			if (!this._open) { return; }
 
-			var waiting = dequeue(this);
+			var waiting = this._waiting.dequeue();
 			if (waiting == null) {
 				this._message = msg;
 			}
@@ -58,7 +57,7 @@ regardless of whether the message was sent before or after `recv` was called.
 				}, 0);
 			}
 			else {
-				enqueue(this, fun);
+				this._waiting.enqueue(fun);
 			}
 		};
 
@@ -134,30 +133,36 @@ only passes through messages matching the predicate.
 
 ## Channel Internals
 
-Waiting receivers are kept on a FIFO queue, implemented as a linked list. The
-channel itself tracks the head and tail of the list, so that enqueues and
-dequeues are both constant time, while each of the queued receivers tracks the
-subsequent receiver.
+Waiting receivers are kept on a FIFO queue, implemented as a linked list. Queue
+tracks both the head and the tail of the list, so that enqueues and dequeues
+are both constant time. Each of the queued elements keeps track of the
+subsequent element, which will become the new head when the first element is
+dequeued.
 
-		var enqueue = function (channel, waiting) {
-			if (channel._waitingTail == null) {
-				channel._waitingHead = waiting;
-				channel._waitingTail = waiting;
-			}
-			else {
-				channel._waitingTail._waitingNext = waiting;
-				channel._waitingTail = waiting;
-			}
-			waiting._waitingNext = null;
+		function Queue() {
+			this._head = null;
+			this._tail = null;
 		}
 
-		var dequeue = function (channel) {
-			if (channel._waitingHead != null) {
-				var head = channel._waitingHead;
+		Queue.prototype.enqueue = function (waiting) {
+			if (this._tail == null) {
+				this._head = waiting;
+				this._tail = waiting;
+			}
+			else {
+				this._tail._queueNext = waiting;
+				this._tail = waiting;
+			}
+			waiting._queueNext = null;
+		}
+
+		Queue.prototype.dequeue = function () {
+			if (this._head != null) {
+				var head = this._head;
 				
-				channel._waitingHead = head._waitingNext;
-				if (channel._waitingHead == null) {
-					channel._waitingTail = null;
+				this._head = head._queueNext;
+				if (this._head == null) {
+					this._tail = null;
 				}
 
 				return head;
