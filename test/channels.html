@@ -122,6 +122,28 @@
 
 		<h2>Topic</h2>
 
+		<input type="text" id="topic_input" value="1" />
+		<button id="topic_button">Click</button>
+		<br />Test 1: <span id="topic_span1"></span>
+		<br />Test 2: <span id="topic_span2"></span>
+		<br />Test 3: <span id="topic_span3"></span>
+
+		<script type="text/javascript">
+			var topic = F.topic();
+
+			document.getElementById('topic_button').onclick = function () {
+				var text = document.getElementById('topic_input').value;
+				if (Number(text)) {
+					document.getElementById('topic_input').value = Number(text) + 1;
+				}
+				topic.send(text);
+			};
+
+			topic.subscribe(setContent('topic_span1'));
+			topic.subscribe(setContent('topic_span2'));
+			topic.subscribe(setContent('topic_span3'));
+		</script>
+
 		<h2>Where</h2>
 		<button id="yes_button">Yes</button>
 		<button id="no_button">No</button>
@@ -144,7 +166,9 @@
 				return e.target.id == 'yes_button';
 			});
 
-			whereChannel2.where(function (e) {
+			var whereTopic = whereChannel2.topic();
+
+			whereTopic.where(function (e) {
 				return e === true;
 			}).subscribe(function (e) {
 				var li = document.createElement('LI');
@@ -152,7 +176,7 @@
 				document.getElementById('yes_list').appendChild(li);
 			});
 
-			whereChannel2.subscribe(function (e) {
+			whereTopic.subscribe(function (e) {
 				var li = document.createElement('LI');
 				li.innerHTML = e;
 				document.getElementById('no_list').appendChild(li);

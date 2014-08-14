@@ -4,7 +4,7 @@ _Asynchronous programming without callback hell._
 
 	;(function () {
 
-## Basics
+## Channels
 
 A channel is an object that routes messages from senders to receivers. Channels
 are both non-blocking and unbuffered, which means that messages sent when there
@@ -72,6 +72,40 @@ will be silently ignored and discarded.
 			this._waitingTail = null;
 		};
 
+## Topics
+
+A topic, unlike a channel, will route a message to all waiting receivers. Like
+a channel, it does not buffer messages, so late-coming receivers may miss
+earlier messages, as well as messages that are coming in faster than the
+receiver can process them (the topic will not block or wait for a slow receiver
+to catch up).
+
+		function Topic() {
+			Channel.call(this);
+		}
+
+		Topic.prototype = new Channel();
+		Topic.prototype.constructor = Topic;
+
+		Topic.prototype.send = function (msg) {
+			if (!this._open) { return; }
+
+			var topic = this;
+			while (!this._waiting.isEmpty()) {
+				(function () {
+					var waiting = topic._waiting.dequeue();
+					setTimeout(function () {
+						waiting(msg)
+					}, 0);
+				})();
+			}
+		};
+
+		Topic.prototype.recv = function (fun) {
+			if (!this._open) { return; }
+			this._waiting.enqueue(fun);
+		};
+
 ## Utilities
 
 Rather than receiving a single message, the `subscribe` method receives
@@ -114,6 +148,18 @@ A throttled channel will only pass a message through once in a given interval
 			});
 
 			return throttled;
+		};
+
+The `topic` method converts an existing channel into a topic.
+
+		Channel.prototype.topic = function () {
+			var topic = new Topic();
+
+			this.subscribe(function (msg) {
+				topic.send(msg);
+			});
+			
+			return topic;
 		};
 
 Provide a predicate function to the `where` method to create a channel that
@@ -172,12 +218,20 @@ dequeued.
 			}
 		};
 
+		Queue.prototype.isEmpty = function () {
+			return this._head == null;
+		};
+
 ## Exports
 
-Only channel construction is exported.
+Only channel and topic construction are exported.
 
 		this.channel = function () {
 			return new Channel();
+		};
+
+		this.topic = function () {
+			return new Topic();
 		};
 	
 **F.channels** is attached to the global F object.
