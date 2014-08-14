@@ -13,7 +13,6 @@ message, make sure the listener is ready to receive before message sending
 begins.
 
 		function Channel() {
-			this._message = null;
 			this._open = true;
 			this._waiting = new Queue();
 		}
@@ -23,18 +22,15 @@ the channel. The `send` method takes a message and either passes it to a
 waiting receiver, or holds on to it for the next `recv` call (if no listener is
 already waiting for a message).
 
-Only the most recent message is kept if no consumer was ready to receive it.
-This is helpful when processing events like mouse movement that may occur
-faster than the receiver's ability to process them.
+Messages are discarded until a consumer is ready to consume them. This is
+helpful when processing events like mouse movement that may occur faster than
+the receiver's ability to process them.
 
 		Channel.prototype.send = function (msg) {
 			if (!this._open) { return; }
 
 			var waiting = this._waiting.dequeue();
-			if (waiting == null) {
-				this._message = msg;
-			}
-			else {
+			if (waiting != null) {
 				setTimeout(function () {
 					waiting(msg)
 				}, 0);
@@ -48,17 +44,7 @@ regardless of whether the message was sent before or after `recv` was called.
 
 		Channel.prototype.recv = function (fun) {
 			if (!this._open) { return; }
-
-			if (this._message != null) {
-				var msg = this._message;
-				this._message == null;
-				setTimeout(function () {
-					fun(msg);
-				}, 0);
-			}
-			else {
-				this._waiting.enqueue(fun);
-			}
+			this._waiting.enqueue(fun);
 		};
 
 Once a channel is closed, it will cease routing any subsequent messages.
@@ -67,9 +53,8 @@ will be silently ignored and discarded.
 
 		Channel.prototype.close = function () {
 			this._open = false;
-			this._message = null;
-			this._waitingHead = null;
-			this._waitingTail = null;
+			this._waiting.empty();
+			this._waiting = null;
 		};
 
 ## Topics
@@ -90,20 +75,11 @@ to catch up).
 		Topic.prototype.send = function (msg) {
 			if (!this._open) { return; }
 
-			var topic = this;
-			while (!this._waiting.isEmpty()) {
-				(function () {
-					var waiting = topic._waiting.dequeue();
-					setTimeout(function () {
-						waiting(msg)
-					}, 0);
-				})();
-			}
-		};
-
-		Topic.prototype.recv = function (fun) {
-			if (!this._open) { return; }
-			this._waiting.enqueue(fun);
+			this._waiting.processAll(function (waiting) {
+				setTimeout(function () {
+					waiting(msg);
+				}, 0);
+			});
 		};
 
 ## Utilities
@@ -218,8 +194,34 @@ dequeued.
 			}
 		};
 
+		// Unlinks all of the elements of the queue, to ensure that they can
+		// be garbage collected.
+		Queue.prototype.empty = function () {
+			var head = this._head;
+			var next = null;
+			while (head != null) {
+				next = head._queueNext;
+				head._queueNext = null;
+				head = next;
+			}
+
+			this._head = null;
+			this._tail = null;
+
+		};
+
 		Queue.prototype.isEmpty = function () {
 			return this._head == null;
+		};
+
+		// Applies a function to every element of the queue, dequeueing each of
+		// them as they are processed.
+		Queue.prototype.processAll = function (fun) {
+			var next = this.dequeue();
+			while (next != null) {
+				fun(next);
+				next = this.dequeue();
+			}
 		};
 
 ## Exports
