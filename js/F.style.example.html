@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>F.style.js Examples</title>
+
+		<script type="text/javascript" src="F.style.js"></script>
+	</head>
+	<body>
+		<h1>F.style.js Examples</h1>
+
+		<div class="example">
+			<h2>Animate</h2>
+			<div id="animate-example-target"
+				style="background: #f00; width: 100px; height: 100px;">
+			</div>
+			<button id="animate-example-button">Run</button>
+
+			<script type="text/javascript">
+				var button = document.getElementById('animate-example-button');
+				button.onclick = function () {
+					F.animate('animate-example-target', {
+						width: '100px',
+						height: '100px'
+					}, {
+						width: '400px',
+						height: '400px'
+					});
+				};
+			</script>
+		</div>
+	</body>
+</html>

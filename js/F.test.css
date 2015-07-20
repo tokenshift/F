@@ -1,0 +1,40 @@
+/* Simple stylesheet for F.test.js test results. */
+
+.test {
+	border: 2px solid #000;
+	border-radius: 5px;
+	margin-top: 4px;
+	padding: 8px 4px;
+}
+
+.test:first-child {
+	margin-top: 0;
+}
+
+.test-name {
+	display: block;
+	font-weight: bold;
+}
+
+.test-result {
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 2px;
+	font: 14px/16px sans-serif;
+	margin-top: 2px;
+	padding: 4px 2px;
+}
+
+.test-result:first-child {
+	margin-top: 0;
+}
+
+.test-result.pass {
+	background: #ada;
+	border-color: #0d0;
+}
+
+.test-result.fail {
+	background: #daa;
+	border-color: #d00;
+}
